@@ -1,0 +1,1 @@
+The Aquariux domains are not reachable from my location (Vietnam) without a VPN. All manual exploration and local test runs were done over a VPN, which adds latency; timeouts were tuned accordingly. 

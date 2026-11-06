@@ -3,4 +3,5 @@ node_modules/
 .auth/
 test-results/
 playwright-report/
-blob-report/CLAUDE.md
+CLAUDE.md
+docs/test-cases.md
