@@ -1,7 +1,5 @@
 import { Page, Locator } from '@playwright/test';
 
-// Short-lived message box shown after trading actions. It disappears after a few seconds,
-// so wait for it right after the action that triggers it.
 export class NotificationToast {
   readonly page: Page;
   readonly description: Locator;
@@ -11,7 +9,11 @@ export class NotificationToast {
     this.description = page.getByTestId('notification-box-description');
   }
 
+  message(text: string): Locator {
+    return this.description.filter({ hasText: text }).last();
+  }
+
   async waitForMessage(text: string) {
-    await this.description.filter({ hasText: text }).waitFor();
+    await this.message(text).waitFor();
   }
 }

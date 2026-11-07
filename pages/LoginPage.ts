@@ -22,7 +22,6 @@ export class LoginPage {
   }
 
   async login(accountId: string, password: string) {
-    // The demo tab is the only one seen so far; clicking it keeps us off a live account.
     await this.demoTab.click();
     await this.accountIdInput.fill(accountId);
     await this.passwordInput.fill(password);

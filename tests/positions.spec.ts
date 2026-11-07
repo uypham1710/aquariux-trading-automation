@@ -7,8 +7,9 @@ import { priceAbove, priceBelow } from '../utils/prices';
 const instrument = XAUUSD;
 
 test.describe('Scope 4 - Open positions', () => {
-  test.beforeEach(async ({ tradePage, positionsTable }) => {
+  test.beforeEach(async ({ tradePage, orderPanel, positionsTable }) => {
     await tradePage.selectSymbol(instrument);
+    test.skip(await orderPanel.isMarketClosed(), `Market is closed for ${instrument.symbol}; orders cannot be placed`);
     await positionsTable.open();
   });
 
@@ -39,8 +40,6 @@ test.describe('Scope 4 - Open positions', () => {
     openPosition,
   }) => {
     const orderNo = await openPosition({ side: 'Buy', volume: instrument.minVolume });
-    // A Buy position closes at the Sell price, shown in the Current Price column,
-    // and the app checks SL/TP against that price.
     const { currentPrice } = await positionsTable.getPosition(orderNo);
     const newStopLoss = priceBelow(currentPrice, MODIFIED_SL_TP_DISTANCE_POINTS, instrument);
     const newTakeProfit = priceAbove(currentPrice, MODIFIED_SL_TP_DISTANCE_POINTS, instrument);
@@ -48,7 +47,6 @@ test.describe('Scope 4 - Open positions', () => {
     await positionsTable.clickEdit(orderNo);
     await editPositionDialog.updateStopLossAndTakeProfit(newStopLoss, newTakeProfit);
 
-    // The table updates after the server confirms, so poll instead of reading once.
     await expect.poll(async () => (await positionsTable.getPosition(orderNo)).stopLoss).toBe(newStopLoss);
     await expect.poll(async () => (await positionsTable.getPosition(orderNo)).takeProfit).toBe(newTakeProfit);
   });
@@ -83,7 +81,6 @@ test.describe('Scope 4 - Open positions', () => {
     await closePositionDialog.closeVolume(instrument.minVolume);
 
     await expect(positionsTable.positionRow(orderNo)).toHaveCount(0);
-    // Positions History and Orders & Deals checks for this close are in scope 7 (TC-7.02).
   });
 
   test('TC-4.05 should partially close an open position @regression', async ({
@@ -91,14 +88,12 @@ test.describe('Scope 4 - Open positions', () => {
     closePositionDialog,
     openPosition,
   }) => {
-    // Twice the minimum, so that closing the minimum leaves a valid remaining volume.
     const openVolume = instrument.minVolume * 2;
     const orderNo = await openPosition({ side: 'Buy', volume: openVolume });
 
     await positionsTable.clickClose(orderNo);
     await closePositionDialog.closeVolume(instrument.minVolume);
 
-    // Assumes the remaining part keeps the same Order No. (open question Q4).
     await expect.poll(async () => (await positionsTable.getPosition(orderNo)).volume).toBe(instrument.minVolume);
   });
 });

@@ -4,7 +4,6 @@ import { parseDisplayNumber, parseOptionalNumber } from '../utils/numbers';
 export interface PositionRecord {
   orderNo: string;
   symbol: string;
-  // Shown in upper case: "BUY" or "SELL".
   type: string;
   volume: number;
   units: number;
@@ -12,9 +11,9 @@ export interface PositionRecord {
   currentPrice: number;
   stopLoss: number | null;
   takeProfit: number | null;
+  openDate: string;
 }
 
-// "Open Positions" tab at the bottom of the trade page.
 export class PositionsTable {
   readonly page: Page;
   readonly tab: Locator;
@@ -31,8 +30,6 @@ export class PositionsTable {
     await this.waitForRowsToRender();
   }
 
-  // The tab label says how many positions exist ("Open Positions (3)").
-  // Waiting for that many rows makes sure the table is fully drawn before we read it.
   async waitForRowsToRender() {
     const label = await this.tab.innerText();
     const count = Number(label.match(/\((\d+)\)/)?.[1] ?? 0);
@@ -42,7 +39,6 @@ export class PositionsTable {
   }
 
   positionRow(orderNo: string): Locator {
-    // Exact match, so Order No. 310738 does not also match 3107386.
     return this.rows.filter({
       has: this.page.getByTestId('asset-open-column-order-id').filter({ hasText: new RegExp(`^${orderNo}$`) }),
     });
@@ -66,6 +62,7 @@ export class PositionsTable {
       currentPrice: parseDisplayNumber(await cell('current-price')),
       stopLoss: parseOptionalNumber(await cell('stop-loss')),
       takeProfit: parseOptionalNumber(await cell('take-profit')),
+      openDate: await cell('open-date'),
     };
   }
 

@@ -7,8 +7,9 @@ import { priceAbove, priceBelow } from '../utils/prices';
 const instrument = XAUUSD;
 
 test.describe('Scope 1 - Market orders with Stop Loss and Take Profit', () => {
-  test.beforeEach(async ({ tradePage, positionsTable }) => {
+  test.beforeEach(async ({ tradePage, orderPanel, positionsTable }) => {
     await tradePage.selectSymbol(instrument);
+    test.skip(await orderPanel.isMarketClosed(), `Market is closed for ${instrument.symbol}; orders cannot be placed`);
     await positionsTable.open();
   });
 
@@ -86,8 +87,6 @@ test.describe('Scope 1 - Market orders with Stop Loss and Take Profit', () => {
   });
 
   test.describe('SL/TP and volume validation', () => {
-    // The app does not disable PLACE ORDER for invalid values. Clicking it shows a message
-    // under the input and the confirmation dialog never opens, so no order is sent.
 
     test('TC-1.05 should not place Buy market order when SL is above the Sell price @regression', async ({
       orderPanel,
